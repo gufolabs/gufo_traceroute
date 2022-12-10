@@ -1,0 +1,54 @@
+site_name: Gufo Traceroute
+site_description: Gufo Traceroute Documentation
+site_author: Gufo Labs
+site_url: "https://docs.gufolabs.com/gufo_traceroute/"
+copyright: "&copy; 2022, Gufo Labs"
+site_dir: dist/docs/
+repo_url: https://github.com/gufolabs/gufo_traceroute/
+repo_name: GitHub
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Reference: reference.md
+  - Examples:
+      - Overview: examples/index.md
+      - Traceroute: examples/traceroute.md
+  - Developers' Guide:
+      - Developer's Environment: environment.md
+      - Building and Testing: testing.md
+      - Common Tasks: devcommon.md
+      - Code Quality: codequality.md
+      - Code Base: codebase.md
+      - Contributing Guide: CONTRIBUTING.md
+      - Code of Conduct: CODE_OF_CONDUCT.md
+  - FAQ: faq.md
+  - Changelog: CHANGELOG.md
+  - License: LICENSE.md
+  # Users
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+watch:
+  - docs/
+  - src/gufo/
+  - examples/
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: false
+markdown_extensions:
+  - toc:
+      permalink: True
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: True
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      clickable_checkbox: true
