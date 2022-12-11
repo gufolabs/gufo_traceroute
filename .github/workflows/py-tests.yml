@@ -37,7 +37,7 @@ jobs:
 
       # Cache dependencies
       - name: Cache Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./.pip
           key: ${{ runner.os }}-tests-{{ matrix.python-version }}-${{ hashFiles('./.requirements/lint.txt') }}-${{ hashFiles('./.requirements/test.txt') }}
