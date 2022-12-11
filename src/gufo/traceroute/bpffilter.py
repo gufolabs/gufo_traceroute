@@ -18,7 +18,7 @@ S_PROG = struct.Struct("HL")
 SO_ATTACH_FILTER = 26
 
 
-def _apply_filter(sock: socket.socket, prog: Iterable[Op]):
+def _apply_filter(sock: socket.socket, prog: Iterable[Op]) -> None:
     ops = list(prog)
     bpf = compile_bpf(ops)
     buf = create_string_buffer(bpf)
@@ -28,7 +28,7 @@ def _apply_filter(sock: socket.socket, prog: Iterable[Op]):
 
 def apply_ipv4_filter(
     sock: socket.socket, dst_addr: str, src_port: int, dst_port: int
-):
+) -> None:
     def addr_to_int(a: str) -> int:
         parts = [int(x) for x in a.split(".")]
         return (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3]

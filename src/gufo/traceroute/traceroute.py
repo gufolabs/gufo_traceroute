@@ -25,7 +25,7 @@ else:
 
     def apply_ipv4_filter(
         sock: socket.socket, dst_addr: str, src_port: int, dst_port: int
-    ):
+    ) -> None:
         pass
 
 
@@ -210,9 +210,10 @@ class Traceroute(object):
                 Tuple of (data, (addr, port))
             """
             loop = asyncio.get_running_loop()
-            return await loop.sock_recvfrom(  # type:ignore[attr-defined]
+            r = await loop.sock_recvfrom(  # type:ignore[attr-defined]
                 sock, 4096
             )
+            return r  # type:ignore[no-any-return]
 
     else:
 
@@ -228,7 +229,7 @@ class Traceroute(object):
                 addr: destiation address
             """
 
-            def callback():
+            def callback() -> None:
                 if fut.done():
                     return  # Cancelled
                 try:
@@ -242,7 +243,7 @@ class Traceroute(object):
                 else:
                     fut.set_result(None)
 
-            def done(_fut: asyncio.Future[None]):
+            def done(_fut: asyncio.Future[None]) -> None:
                 if handle is None or not handle.cancelled():
                     loop.remove_writer(fd)
 
@@ -256,7 +257,7 @@ class Traceroute(object):
             fd = sock.fileno()
             handle = loop.add_writer(fd, callback=callback)
             fut.add_done_callback(done)
-            return await fut
+            await fut
 
         async def _recvfrom(
             self, sock: socket.socket
@@ -271,7 +272,7 @@ class Traceroute(object):
                 Tuple of (data, (addr, port))
             """
 
-            def callback():
+            def callback() -> None:
                 if fut.done():
                     return  # Cancelled
                 try:
@@ -285,7 +286,9 @@ class Traceroute(object):
                 else:
                     fut.set_result((data, addr))
 
-            def done(_fut: asyncio.Future[Tuple[bytes, Tuple[str, int]]]):
+            def done(
+                _fut: asyncio.Future[Tuple[bytes, Tuple[str, int]]]
+            ) -> None:
                 if handle is None or not handle.cancelled():
                     loop.remove_reader(fd)
 
@@ -300,7 +303,7 @@ class Traceroute(object):
 
             handle = loop.add_reader(fd, callback=callback)
             fut.add_done_callback(done)
-            return await fut
+            return await fut  # type:ignore[no-any-return]
 
     async def _get_hop_ipv4(
         self, sock: socket.socket, dst_addr: str, src_port: int
