@@ -9,6 +9,10 @@ on:
       - ".requirements/docs.txt"
       - "docs/**"
       - "examples/**"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "CODE_OF_CONDUCT.md"
+      - "LICENSE.md"
     branches:
       - master
 jobs:
