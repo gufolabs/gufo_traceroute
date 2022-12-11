@@ -15,6 +15,18 @@ import asyncio
 import sys
 
 HAS_LOOP_SENDTO = sys.version_info >= (3, 11)
+IS_LINUX = sys.platform == "linux"
+IS_DARWIN = sys.platform == "darwin"
+HAS_BPF = IS_LINUX
+
+if HAS_BPF:
+    from .bpffilter import apply_ipv4_filter
+else:
+
+    def apply_ipv4_filter(
+        sock: socket.socket, dst_addr: str, src_port: int, dst_port: int
+    ):
+        pass
 
 
 @dataclass
@@ -122,11 +134,6 @@ class Traceroute(object):
         Returns:
             Iterable of HopInfo.
         """
-        # Raw socket to receive the response
-        recv_socket = socket.socket(
-            socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP
-        )
-        recv_socket.setblocking(False)
         # UDP socket to send requests
         send_socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP
@@ -137,6 +144,17 @@ class Traceroute(object):
         # Bind UDP socket to acquire the source port
         send_socket.bind(("0.0.0.0", 0))
         src_port = send_socket.getsockname()[1]
+        # Raw socket to receive the response
+        recv_socket = socket.socket(
+            socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP
+        )
+        apply_ipv4_filter(
+            recv_socket,
+            dst_addr=addr,
+            src_port=src_port,
+            dst_port=self.dst_port,
+        )
+        recv_socket.setblocking(False)
         # Vary TTL in range 1..max_hops
         for ttl in range(1, self.max_hops + 1):
             # Adjust egress packet TTL
@@ -149,7 +167,7 @@ class Traceroute(object):
                 # Wait response or timeout
                 try:
                     hop = await asyncio.wait_for(
-                        self._get_hop(
+                        self._get_hop_ipv4(
                             recv_socket, dst_addr=addr, src_port=src_port
                         ),
                         self.timeout,
@@ -166,6 +184,14 @@ class Traceroute(object):
         async def _sendto(
             self, sock: socket.socket, payload: bytes, addr: str
         ) -> None:
+            """
+            Send payload to addr. Python 3.11+ version.
+
+            Args:
+                sock: Socket instance.
+                payload: Packet payload
+                addr: destiation address
+            """
             loop = asyncio.get_running_loop()
             await loop.sock_sendto(  # type:ignore[attr-defined]
                 sock, payload, (addr, self.dst_port)
@@ -174,6 +200,15 @@ class Traceroute(object):
         async def _recvfrom(
             self, sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
+            """
+            Receive packet from socket. Python 3.11+ version.
+
+            Args:
+                sock: Socket instance.
+
+            Returns:
+                Tuple of (data, (addr, port))
+            """
             loop = asyncio.get_running_loop()
             return await loop.sock_recvfrom(  # type:ignore[attr-defined]
                 sock, 4096
@@ -184,6 +219,15 @@ class Traceroute(object):
         async def _sendto(
             self, sock: socket.socket, payload: bytes, addr: str
         ) -> None:
+            """ "
+            Send payload to addr. Prior to Python 3.11 version.
+
+            Args:
+                sock: Socket instance.
+                payload: Packet payload
+                addr: destiation address
+            """
+
             def callback():
                 if fut.done():
                     return  # Cancelled
@@ -217,6 +261,16 @@ class Traceroute(object):
         async def _recvfrom(
             self, sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
+            """
+            Receive packet from socket. Prior to Python 3.11 version.
+
+            Args:
+                sock: Socket instance.
+
+            Returns:
+                Tuple of (data, (addr, port))
+            """
+
             def callback():
                 if fut.done():
                     return  # Cancelled
@@ -248,9 +302,19 @@ class Traceroute(object):
             fut.add_done_callback(done)
             return await fut
 
-    async def _get_hop(
+    async def _get_hop_ipv4(
         self, sock: socket.socket, dst_addr: str, src_port: int
     ) -> Hop:
+        """
+        Read the raw socket until the next-hop information
+        is revealed.
+
+        Args:
+            sock: Socket instance.
+            dst_addr: Destination address.
+            src_port: Source port.
+        """
+
         def is_matched(msg: bytes) -> bool:
             proto = msg[9]
             if proto != 1:  # proto == icmp?

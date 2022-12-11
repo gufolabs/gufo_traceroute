@@ -27,6 +27,8 @@ def test_traceroute_ipv4():
     assert len(r) == 1
     assert r[0].ttl == 1
     assert len(r[0].hops) == 3
+    for hop in r[0].hops:
+        assert hop.addr == "127.0.0.1"
 
 
 def test_traceroute_ipv6():
