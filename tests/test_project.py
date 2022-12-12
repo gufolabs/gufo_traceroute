@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------
-# Gufo Traceroute: Project structure tests
+# Gufo Labs: Project structure tests
 # ---------------------------------------------------------------------
 # Copyright (C) 2022, Gufo Labs
 # See LICENSE.md for details
@@ -10,6 +10,19 @@ import os
 
 # Third-party modules
 import pytest
+
+
+def _get_project():
+    d = [
+        f
+        for f in os.listdir(os.path.join("src", "gufo"))
+        if not f.startswith(".") and not f.startswith("_")
+    ]
+    assert len(d) == 1
+    return d[0]
+
+
+PROJECT = _get_project()
 
 REQUIRED_FILES = [
     ".devcontainer/devcontainer.json",
@@ -43,7 +56,8 @@ REQUIRED_FILES = [
     "mkdocs.yml",
     "pyproject.toml",
     "setup.cfg",
-    "src/gufo/traceroute/py.typed",
+    f"src/gufo/{PROJECT}/__init__.py",
+    f"src/gufo/{PROJECT}/py.typed",
     "tests/test_docs.py",
     "tests/test_project.py",
 ]
@@ -61,5 +75,5 @@ def test_required_files(name: str):
 
 
 def test_version():
-    m = __import__("gufo.traceroute", {}, {}, "*")
+    m = __import__(f"gufo.{PROJECT}", {}, {}, "*")
     assert hasattr(m, "__version__"), "__init__.py must contain __version__"
