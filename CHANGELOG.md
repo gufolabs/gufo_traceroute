@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To see unreleased changes, please see the [CHANGELOG on the master branch](https://github.com/gufolabs/gufo_traceroute/blob/master/CHANGELOG.md) guide.
 
+## [Unreleased]
+
+### Infrastructure
+
+* CI workflows tests
+
+
 ## 0.1.0 - 2022-12-11
 
 ### Added
