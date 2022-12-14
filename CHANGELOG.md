@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To see unreleased changes, please see the [CHANGELOG on the master branch](https://github.com/gufolabs/gufo_traceroute/blob/master/CHANGELOG.md) guide.
 
+## [Unreleased]
+
+### Added
+
+* `Hop.asn` field.
+* Built-in whois client for autonomous system lookups.
+
+### Infrastructure
+
+* Switch to the `pypa/gh-action-pypi-publish@release/v1`
+
 ## 0.1.1 - 2022-12-14
 
 ### Added

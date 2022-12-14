@@ -6,13 +6,16 @@
 # ---------------------------------------------------------------------
 
 # Python modules
-from typing import Type, Optional, AsyncIterable, List, Tuple
+from typing import Type, Optional, AsyncIterable, List, Tuple, Dict
 from types import TracebackType
 import socket
 from dataclasses import dataclass
 import time
 import asyncio
 import sys
+
+# Gufo Labs modules
+from .whois import WhoisClient, WhoisError
 
 HAS_LOOP_SENDTO = sys.version_info >= (3, 11)
 IS_LINUX = sys.platform == "linux"
@@ -37,10 +40,13 @@ class Hop(object):
     Args:
         addr: Hop address.
         rtt: Round-trip time in seconds.
+        asn: Autonoumous System number,
+            if as resolution is enabled.
     """
 
     addr: str
     rtt: float
+    asn: int
 
 
 @dataclass
@@ -73,6 +79,16 @@ class Traceroute(object):
         timeout: Hop timeout.
         tos: DSCP/ToS mark for egress packets.
         min_ttl: Minimum TTL to start with.
+        whois_addr: Whois server address or FQDN
+            for authonomous system resolution.
+        whois_port: Whois server port.
+        resolve_as: Fill Hop.asn with the hop's autonomuous
+            system number.
+
+    Note:
+        `resolve_as` option implies the requests to the
+        external whois server. Requests may take additional
+        time or may be blocked in closed environments.
     """
 
     def __init__(
@@ -84,6 +100,9 @@ class Traceroute(object):
         timeout: float = 1.0,
         tos: int = 0,
         min_ttl: int = 1,
+        whois_addr: str = "whois.radb.net",
+        whois_port: int = 43,
+        resolve_as: bool = False,
     ) -> None:
         self.max_hops = max_hops
         self.src_addr = src_addr
@@ -92,6 +111,10 @@ class Traceroute(object):
         self.timeout = timeout
         self.min_ttl = min_ttl
         self.tos = tos
+        self._whois: Optional[WhoisClient] = None
+        self._whois_cache: Dict[str, int] = {}
+        if resolve_as:
+            self._whois = WhoisClient(whois_addr, whois_port)
 
     async def __aenter__(self) -> "Traceroute":
         return self
@@ -371,4 +394,20 @@ class Traceroute(object):
                 raise TimeoutError
             if is_matched(data):
                 rtt_ns = time.perf_counter_ns() - t0
-                return Hop(addr=addr, rtt=float(rtt_ns) / 1_000_000_000.0)
+                # Resolve AS number
+                asn = await self._resolve_as(addr)
+                return Hop(
+                    addr=addr, rtt=float(rtt_ns) / 1_000_000_000.0, asn=asn
+                )
+
+    async def _resolve_as(self, addr: str) -> int:
+        if not self._whois:
+            return 0
+        asn = self._whois_cache.get(addr)
+        if asn is None:
+            try:
+                asn = await self._whois.resolve_as(addr)
+            except WhoisError:
+                asn = 0
+        self._whois_cache[addr] = asn
+        return asn
