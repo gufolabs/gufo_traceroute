@@ -65,21 +65,28 @@ class Traceroute(object):
 
     Args:
         max_hops: Limit of the hops to trace.
+        src_port: Source port for UDP packet.
+            `0` - get ephemeric port automatically.
         dst_port: Destination UDP port.
         timeout: Hop timeout.
         tos: DSCP/ToS mark for egress packets.
+        min_ttl: Minimum TTL to start with.
     """
 
     def __init__(
         self,
         max_hops: int = 30,
+        src_port: int = 1212,
         dst_port: int = 33434,
         timeout: float = 1.0,
         tos: int = 0,
+        min_ttl: int = 1,
     ) -> None:
         self.max_hops = max_hops
+        self.src_port = src_port
         self.dst_port = dst_port
         self.timeout = timeout
+        self.min_ttl = min_ttl
         self.tos = tos
 
     async def __aenter__(self) -> "Traceroute":
@@ -94,7 +101,10 @@ class Traceroute(object):
         return None
 
     async def traceroute(
-        self, addr: str, tries: int = 3
+        self,
+        addr: str,
+        tries: int = 3,
+        min_ttl: Optional[int] = None,
     ) -> AsyncIterable[HopInfo]:
         """
         Perform traceroute to address.
@@ -102,6 +112,7 @@ class Traceroute(object):
         Args:
             addr: Destination address.
             tries: Number of tries.
+            min_ttl: Minimum TTL to start with.
 
         Returns:
             Iterable of HopInfo.
@@ -118,11 +129,13 @@ class Traceroute(object):
             raise NotImplementedError("IPv6 is not implemented still")
         else:
             # IPv4
-            async for hop in self._traceroute_ipv4(addr, tries=tries):
+            async for hop in self._traceroute_ipv4(
+                addr, tries=tries, min_ttl=min_ttl
+            ):
                 yield hop
 
     async def _traceroute_ipv4(
-        self, addr: str, tries: int = 3
+        self, addr: str, tries: int = 3, min_ttl: Optional[int] = None
     ) -> AsyncIterable[HopInfo]:
         """
         Perform traceroute to address for IPv4.
@@ -130,6 +143,7 @@ class Traceroute(object):
         Args:
             addr: Destination address.
             tries: Number of tries.
+            min_ttl: Minimum TTL to start with.
 
         Returns:
             Iterable of HopInfo.
@@ -142,7 +156,7 @@ class Traceroute(object):
             send_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, self.tos)
         send_socket.setblocking(False)
         # Bind UDP socket to acquire the source port
-        send_socket.bind(("0.0.0.0", 0))
+        send_socket.bind(("0.0.0.0", self.src_port))
         src_port = send_socket.getsockname()[1]
         # Raw socket to receive the response
         recv_socket = socket.socket(
@@ -155,8 +169,10 @@ class Traceroute(object):
             dst_port=self.dst_port,
         )
         recv_socket.setblocking(False)
-        # Vary TTL in range 1..max_hops
-        for ttl in range(1, self.max_hops + 1):
+        # Calculate minimal TTL to start with
+        min_ttl = max(self.min_ttl if min_ttl is None else min_ttl, 1)
+        # Vary TTL in range min_ttl..max_hops
+        for ttl in range(min_ttl, self.max_hops + 1):
             # Adjust egress packet TTL
             send_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
             #

@@ -8,10 +8,14 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 
 ## [Unreleased]
 
+### Added
+
+* `min_ttl` parameter.
+* `src_port` parameter.
+
 ### Infrastructure
 
 * CI workflows tests
-
 
 ## 0.1.0 - 2022-12-11
 

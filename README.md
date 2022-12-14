@@ -16,7 +16,7 @@
 
 ---
 
-Gufo Traceroute is the Python asyncio library for IPv4 traceroute. It consist of a clean Python API
+*Gufo Traceroute* is the Python asyncio library for IPv4 traceroute. It consist of a clean Python API
 which hides all raw-socket manipulation details.
 
 ``` py
