@@ -12,6 +12,7 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 
 * `min_ttl` parameter.
 * `src_port` parameter.
+* `src_addr` parameter.
 
 ### Infrastructure
 

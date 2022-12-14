@@ -65,6 +65,8 @@ class Traceroute(object):
 
     Args:
         max_hops: Limit of the hops to trace.
+        src_addr: Source address of the UDP packet.
+            Detect automatically if not set.
         src_port: Source port for UDP packet.
             `0` - get ephemeric port automatically.
         dst_port: Destination UDP port.
@@ -76,13 +78,15 @@ class Traceroute(object):
     def __init__(
         self,
         max_hops: int = 30,
-        src_port: int = 1212,
+        src_addr: Optional[str] = None,
+        src_port: int = 0,
         dst_port: int = 33434,
         timeout: float = 1.0,
         tos: int = 0,
         min_ttl: int = 1,
     ) -> None:
         self.max_hops = max_hops
+        self.src_addr = src_addr
         self.src_port = src_port
         self.dst_port = dst_port
         self.timeout = timeout
@@ -156,7 +160,8 @@ class Traceroute(object):
             send_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, self.tos)
         send_socket.setblocking(False)
         # Bind UDP socket to acquire the source port
-        send_socket.bind(("0.0.0.0", self.src_port))
+        src_addr = self.src_addr if self.src_addr else "0.0.0.0"
+        send_socket.bind((src_addr, self.src_port))
         src_port = send_socket.getsockname()[1]
         # Raw socket to receive the response
         recv_socket = socket.socket(
