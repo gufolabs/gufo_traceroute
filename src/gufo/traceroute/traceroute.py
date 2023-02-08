@@ -254,6 +254,7 @@ class Traceroute(object):
 
     if HAS_LOOP_SENDTO:
 
+        @no_type_check
         async def _sendto(
             self: "Traceroute", sock: socket.socket, payload: bytes, addr: str
         ) -> None:
