@@ -1,9 +1,12 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: BPF primitives test
 # ---------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
+
+# Python modules
+from typing import List
 
 # Third-party modules
 import pytest
@@ -11,55 +14,55 @@ import pytest
 # Gufo Labs modules
 from gufo.traceroute.bpf import (
     Op,
-    ldb,
-    ldh,
-    ld,
-    ret,
     ja,
     jeq,
     jne,
+    ld,
+    ldb,
+    ldh,
     preprocess_bpf,
+    ret,
 )
 
 
-def test_compile_jt_fail():
+def test_compile_jt_fail() -> None:
     op = Op(0, "test", 0, 0)
     with pytest.raises(ValueError):
-        op.compile()
+        op.encode()
 
 
-def test_compile_jf_fail():
+def test_compile_jf_fail() -> None:
     op = Op(0, 0, "test", 0)
     with pytest.raises(ValueError):
-        op.compile()
+        op.encode()
 
 
-def test_compile_k_fail():
+def test_compile_k_fail() -> None:
     op = Op(0, 0, 0, "test")
     with pytest.raises(ValueError):
-        op.compile()
+        op.encode()
 
 
-def test_backref():
+def test_backref() -> None:
     prog = [ldb(10, label="start"), ja("start")]
     with pytest.raises(ValueError):
         preprocess_bpf(prog)
 
 
 @pytest.mark.parametrize(
-    "op,exp",
+    ("op", "exp"),
     [
         (ldb(20), Op(0x30, 0, 0, 20)),
         (ldh(30), Op(0x28, 0, 0, 30)),
         (ld(28), Op(0x20, 0, 0, 28)),
     ],
 )
-def test_op(op, exp):
+def test_op(op:Op, exp:Op) -> None:
     assert op == exp
 
 
 @pytest.mark.parametrize(
-    "prog,exp",
+    ("prog", "exp"),
     [
         (
             [
@@ -149,6 +152,6 @@ def test_op(op, exp):
         ),
     ],
 )
-def test_preprocess_bpf(prog, exp):
+def test_preprocess_bpf(prog:List[Op], exp:List[Op]) -> None:
     r = preprocess_bpf(prog)
     assert r == exp

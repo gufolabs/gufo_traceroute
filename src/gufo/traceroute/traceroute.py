@@ -1,18 +1,20 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: Python Traceroute Library
 # ---------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
 
+"""Traceroute implementation."""
+
 # Python modules
-from typing import Type, Optional, AsyncIterable, List, Tuple, Dict
-from types import TracebackType
-import socket
-from dataclasses import dataclass
-import time
 import asyncio
+import socket
 import sys
+import time
+from dataclasses import dataclass
+from types import TracebackType
+from typing import AsyncIterable, Dict, List, Optional, Tuple, Type
 
 # Gufo Labs modules
 from .whois import WhoisClient, WhoisError
@@ -21,6 +23,12 @@ HAS_LOOP_SENDTO = sys.version_info >= (3, 11)
 IS_LINUX = sys.platform == "linux"
 IS_DARWIN = sys.platform == "darwin"
 HAS_BPF = IS_LINUX
+PROTO_ICMP = 1
+PROTO_UDP = 17
+ICMP_UNREACH = 3
+ICMP_TTL_EXCEEDED = 11
+ACCEPTABLE_ICMP = (ICMP_UNREACH, ICMP_TTL_EXCEEDED)
+
 
 if HAS_BPF:
     from .bpffilter import apply_ipv4_filter
@@ -29,7 +37,11 @@ else:
     def apply_ipv4_filter(
         sock: socket.socket, dst_addr: str, src_port: int, dst_port: int
     ) -> None:
-        pass
+        """
+        Stub for apply_ipv4_filter.
+
+        Does nothing.
+        """
 
 
 @dataclass
@@ -92,7 +104,7 @@ class Traceroute(object):
     """
 
     def __init__(
-        self,
+        self: "Traceroute",
         max_hops: int = 30,
         src_addr: Optional[str] = None,
         src_port: int = 0,
@@ -116,19 +128,20 @@ class Traceroute(object):
         if resolve_as:
             self._whois = WhoisClient(whois_addr, whois_port)
 
-    async def __aenter__(self) -> "Traceroute":
+    async def __aenter__(self: "Traceroute") -> "Traceroute":
+        """Asynchronous context manager entry."""
         return self
 
     async def __aexit__(
-        self,
+        self: "Traceroute",
         exc_type: Optional[Type[BaseException]],
         exc: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        return None
+        """Asynchronous context manager exit."""
 
     async def traceroute(
-        self,
+        self: "Traceroute",
         addr: str,
         tries: int = 3,
         min_ttl: Optional[int] = None,
@@ -153,7 +166,8 @@ class Traceroute(object):
         """
         if ":" in addr:
             # IPv6
-            raise NotImplementedError("IPv6 is not implemented still")
+            msg = "IPv6 is not implemented still"
+            raise NotImplementedError(msg)
         else:
             # IPv4
             async for hop in self._traceroute_ipv4(
@@ -162,7 +176,10 @@ class Traceroute(object):
                 yield hop
 
     async def _traceroute_ipv4(
-        self, addr: str, tries: int = 3, min_ttl: Optional[int] = None
+        self: "Traceroute",
+        addr: str,
+        tries: int = 3,
+        min_ttl: Optional[int] = None,
     ) -> AsyncIterable[HopInfo]:
         """
         Perform traceroute to address for IPv4.
@@ -183,8 +200,12 @@ class Traceroute(object):
             send_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, self.tos)
         send_socket.setblocking(False)
         # Bind UDP socket to acquire the source port
-        src_addr = self.src_addr if self.src_addr else "0.0.0.0"
-        send_socket.bind((src_addr, self.src_port))
+        send_socket.bind(
+            (
+                self.src_addr if self.src_addr else "0.0.0.0",  # noqa: S104
+                self.src_port,
+            )
+        )
         src_port = send_socket.getsockname()[1]
         # Raw socket to receive the response
         recv_socket = socket.socket(
@@ -226,10 +247,12 @@ class Traceroute(object):
     if HAS_LOOP_SENDTO:
 
         async def _sendto(
-            self, sock: socket.socket, payload: bytes, addr: str
+            self: "Traceroute", sock: socket.socket, payload: bytes, addr: str
         ) -> None:
             """
-            Send payload to addr. Python 3.11+ version.
+            Send payload to addr.
+
+            Python 3.11+ version.
 
             Args:
                 sock: Socket instance.
@@ -242,10 +265,12 @@ class Traceroute(object):
             )
 
         async def _recvfrom(
-            self, sock: socket.socket
+            self: "Traceroute", sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
             """
-            Receive packet from socket. Python 3.11+ version.
+            Receive packet from socket.
+
+            Python 3.11+ version.
 
             Args:
                 sock: Socket instance.
@@ -254,18 +279,19 @@ class Traceroute(object):
                 Tuple of (data, (addr, port))
             """
             loop = asyncio.get_running_loop()
-            r = await loop.sock_recvfrom(  # type:ignore[attr-defined]
+            return await loop.sock_recvfrom(  # type: ignore[return-value]
                 sock, 4096
             )
-            return r  # type:ignore[no-any-return]
 
     else:
 
         async def _sendto(
-            self, sock: socket.socket, payload: bytes, addr: str
+            self: "Traceroute", sock: socket.socket, payload: bytes, addr: str
         ) -> None:
-            """ "
-            Send payload to addr. Prior to Python 3.11 version.
+            """
+            Send payload to addr.
+
+            Backport from Python 3.11 to the prior versions.
 
             Args:
                 sock: Socket instance.
@@ -282,7 +308,7 @@ class Traceroute(object):
                     return
                 except (SystemExit, KeyboardInterrupt):
                     raise
-                except BaseException as exc:
+                except BaseException as exc:  # noqa: BLE001
                     fut.set_exception(exc)
                 else:
                     fut.set_result(None)
@@ -295,7 +321,7 @@ class Traceroute(object):
                 sock.sendto(payload, (addr, self.dst_port))
                 return
             except (BlockingIOError, InterruptedError):
-                pass
+                pass  # noqa: S110
             loop = asyncio.get_running_loop()
             fut = loop.create_future()
             fd = sock.fileno()
@@ -304,7 +330,7 @@ class Traceroute(object):
             await fut
 
         async def _recvfrom(
-            self, sock: socket.socket
+            self: "Traceroute", sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
             """
             Receive packet from socket. Prior to Python 3.11 version.
@@ -325,7 +351,7 @@ class Traceroute(object):
                     return
                 except (SystemExit, KeyboardInterrupt):
                     raise
-                except BaseException as exc:
+                except BaseException as exc:  # noqa: BLE001
                     fut.set_exception(exc)
                 else:
                     fut.set_result((data, addr))
@@ -340,7 +366,7 @@ class Traceroute(object):
             try:
                 return sock.recvfrom(SIZE)
             except (BlockingIOError, InterruptedError):
-                pass
+                pass  # noqa: S110
             loop = asyncio.get_running_loop()
             fut = loop.create_future()
             fd = sock.fileno()
@@ -350,9 +376,11 @@ class Traceroute(object):
             return await fut  # type:ignore[no-any-return]
 
     async def _get_hop_ipv4(
-        self, sock: socket.socket, dst_addr: str, src_port: int
+        self: "Traceroute", sock: socket.socket, dst_addr: str, src_port: int
     ) -> Hop:
         """
+        Get next hop informatio from the raw socket.
+
         Read the raw socket until the next-hop information
         is revealed.
 
@@ -364,14 +392,13 @@ class Traceroute(object):
 
         def is_matched(msg: bytes) -> bool:
             proto = msg[9]
-            if proto != 1:  # proto == icmp?
+            if proto != PROTO_ICMP:
                 return False
             icmp_type = msg[20]
-            if icmp_type == 11 or icmp_type == 3:
-                # TTL expired, Destination unreachable
+            if icmp_type in ACCEPTABLE_ICMP:
                 orig = msg[28:]  # Original header
                 orig_proto = orig[9]
-                if orig_proto != 17:
+                if orig_proto != PROTO_UDP:
                     return False  # Not UDP
                 orig_dst_ip = f"{orig[16]}.{orig[17]}.{orig[18]}.{orig[19]}"
                 if orig_dst_ip != dst_addr:
@@ -390,8 +417,8 @@ class Traceroute(object):
             # Python 3.8-3.10 leak CancelledError here
             try:
                 data, (addr, _) = await self._recvfrom(sock)
-            except asyncio.CancelledError:
-                raise TimeoutError
+            except asyncio.CancelledError as e:
+                raise TimeoutError from e
             if is_matched(data):
                 rtt_ns = time.perf_counter_ns() - t0
                 # Resolve AS number
@@ -400,7 +427,16 @@ class Traceroute(object):
                     addr=addr, rtt=float(rtt_ns) / 1_000_000_000.0, asn=asn
                 )
 
-    async def _resolve_as(self, addr: str) -> int:
+    async def _resolve_as(self: "Traceroute", addr: str) -> int:
+        """
+        Get AS for IP address.
+
+        Args:
+            addr: IP address.
+
+        Returns:
+            AS number of `0` if not found.
+        """
         if not self._whois:
             return 0
         asn = self._whois_cache.get(addr)

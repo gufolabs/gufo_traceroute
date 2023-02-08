@@ -1,20 +1,22 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: Whois client
 # ---------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
+
+"""Whois client impementation."""
 
 # Python modules
 import asyncio
 
 
 class WhoisError(Exception):
-    pass
+    """Whois error base class."""
 
 
 class WhoisConnectionError(Exception):
-    pass
+    """Cannot connect to whois server."""
 
 
 class WhoisClient(object):
@@ -27,12 +29,14 @@ class WhoisClient(object):
         timeout: Request timeout.
     """
 
-    def __init__(self, addr: str, port: int = 43, timeout: float = 5.0):
+    def __init__(
+        self: "WhoisClient", addr: str, port: int = 43, timeout: float = 5.0
+    ) -> None:
         self.addr = addr
         self.port = port
         self.timeout = timeout
 
-    async def resolve_as(self, addr: str) -> int:
+    async def resolve_as(self: "WhoisClient", addr: str) -> int:
         """
         Resolve IP address and return the AS.
 
@@ -48,7 +52,7 @@ class WhoisClient(object):
         """
         return await asyncio.wait_for(self._resolve_as(addr), self.timeout)
 
-    async def _resolve_as(self, addr: str) -> int:
+    async def _resolve_as(self: "WhoisClient", addr: str) -> int:
         """
         Interenal implementation for `resolve_as`.
 
@@ -62,18 +66,15 @@ class WhoisClient(object):
             WhoisConnectionError: If failed to connect to whois server.
             WhoisError: On resolution error.
         """
-
         try:
             reader, writer = await asyncio.open_connection(
                 self.addr, self.port
             )
-        except ConnectionRefusedError:
-            raise WhoisConnectionError("Connection refused")
+        except ConnectionRefusedError as e:
+            msg = "Connection refused"
+            raise WhoisConnectionError(msg) from e
         # Send request
-        if ":" in addr:
-            plen = 128  # IPv6
-        else:
-            plen = 32  # IPv4
+        plen = 128 if ":" in addr else 32
         req = f"!r{addr}/{plen},l\n"
         writer.write(req.encode())
         # Wait for reply
@@ -83,8 +84,10 @@ class WhoisClient(object):
         # Parse data
         resp = data.decode()
         if resp[0] != "A":
-            raise WhoisError(f"Whois error: {resp}")
+            msg = f"Whois error: {resp}"
+            raise WhoisError(msg)
         for line in resp.splitlines():
             if line.startswith("origin:"):
                 return int(line[7:].strip()[2:])
-        raise WhoisError("No origin found")
+        msg = "No origin found"
+        raise WhoisError(msg)

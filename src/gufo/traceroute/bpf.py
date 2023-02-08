@@ -1,14 +1,16 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: BPF primitives
 # ---------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
 
+"""BPF primitives."""
+
 # Python modules
-from typing import Union, Optional, Iterable, List
-from dataclasses import dataclass
 import struct
+from dataclasses import dataclass
+from typing import Iterable, List, Optional, Union
 
 # Constants from FreeBSD's net/bpf.h
 # Classes
@@ -88,52 +90,160 @@ class Op(object):
     k: REF
     label: Optional[str] = None
 
-    def compile(self) -> bytes:
+    def encode(self: "Op") -> bytes:
         """
         Compile opcode to the binary form.
 
-        Returns: 8-byte binary representation
+        Returns:
+            8-byte binary representation
         """
         if isinstance(self.jt, str):
-            raise ValueError("Cannot compile symbolic jt reference")
+            msg = "Cannot compile symbolic jt reference"
+            raise ValueError(msg)
         if isinstance(self.jf, str):
-            raise ValueError("Cannot compile symbolic jf reference")
+            msg = "Cannot compile symbolic jf reference"
+            raise ValueError(msg)
         if isinstance(self.k, str):
-            raise ValueError("Cannot compile symbolic k reference")
+            msg = "Cannot compile symbolic k reference"
+            raise ValueError(msg)
         return S_OP.pack(self.code, self.jt, self.jf, self.k)
 
 
 def ldb(k: int, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `ldb` op.
+
+    Generates "load byte (b-bit) into accumulator" instruction.
+
+    Args:
+        k: Loaded value.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_LD | BPF_B | BPF_ABS, 0, 0, k, label=label)
 
 
 def ldh(k: int, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `ldh` op.
+
+    Generates "load half-word (16 bit) into accumulator" instruction.
+
+    Args:
+        k: Loaded value.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_LD | BPF_H | BPF_ABS, 0, 0, k, label=label)
 
 
 def ld(k: int, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `ld` op.
+
+    Generates "load word (32 bit) into accumulator" instruction.
+
+    Args:
+        k: Loaded value.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_LD | BPF_W | BPF_ABS, 0, 0, k, label=label)
 
 
 def ret(k: int, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `ret` op.
+
+    Generates "return" instruction. BPF return semantic is:
+
+    * `-1` - return entire packet.
+    * `0` - discard the packet and stop processing.
+    * `n`, where n > 0 - truncate packet to `n` octets.
+
+    Args:
+        k: Returned value.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_RET | BPF_K, 0, 0, k, label=label)
 
 
 def ja(t: REF, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `ja` instruction.
+
+    Generates "unconditional jump" instruction.
+
+    Args:
+        t: Jump reference, either symbolic or relative.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_JMP | BPF_JA | BPF_K, 0, 0, t, label=label)
 
 
 def jeq(k: int, jt: REF, jf: REF = 0, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `jeq` instruction.
+
+    Generates "jump if equal" instruction. Compares argument `k` with
+    accumulator a.
+
+    Args:
+        k: Compared value.
+        t: Jump reference, either symbolic or relative.
+        jt: Absolute or relative reference jump reference if condition met.
+        jf: Absolute or relative reference jump reference if condition failed.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_JMP | BPF_JEQ | BPF_K, jt, jf, k, label=label)
 
 
 def jne(k: int, jt: REF, jf: REF = 0, *, label: Optional[str] = None) -> Op:
+    """
+    Generate `jne` instruction.
+
+    Generates "jump if not equal" instruction. Compares argument `k` with
+    accumulator a.
+
+    Args:
+        k: Compared value.
+        t: Jump reference, either symbolic or relative.
+        jt: Absolute or relative reference jump reference if condition met.
+        jf: Absolute or relative reference jump reference if condition failed.
+        label: Optional symbolic label.
+
+    Returns:
+        `Op` instance.
+    """
     return Op(BPF_JMP | BPF_JEQ | BPF_K, jf, jt, k, label=label)
 
 
 def preprocess_bpf(prog: Iterable[Op]) -> List[Op]:
     """
-    Expand symbolic references
+    Expand symbolic references.
+
+    Expand symbolic references with the relative ones.
+
+    Args:
+        prog: Iterable of `Op` containing origial program.
+
+    Returns:
+        List of processed `Op`.
     """
 
     def resolve(current: int, label: REF) -> int:
@@ -141,7 +251,8 @@ def preprocess_bpf(prog: Iterable[Op]) -> List[Op]:
             return label
         target = labels[label]
         if target <= current:
-            raise ValueError(f"Error in line {current}: Backward reference")
+            msg = f"Error in line {current}: Backward reference"
+            raise ValueError(msg)
         return target - current - 1
 
     ops = list(prog)
@@ -171,4 +282,16 @@ def preprocess_bpf(prog: Iterable[Op]) -> List[Op]:
 
 
 def compile_bpf(prog: Iterable[Op]) -> bytes:
-    return b"".join(op.compile() for op in preprocess_bpf(prog))
+    """
+    Compile BPF program.
+
+    Compiles iterable of `Op` into binary program,
+    resolving all symbolic references.
+
+    Args:
+        prog: Iterable of `Op` containing the program.
+
+    Returns:
+        Binary representation.
+    """
+    return b"".join(op.encode() for op in preprocess_bpf(prog))

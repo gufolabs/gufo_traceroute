@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # Gufo Traceroute: whois tests
 # ----------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ----------------------------------------------------------------------
 
@@ -12,14 +12,14 @@ import asyncio
 import pytest
 
 # Gufo Labs modules
-from gufo.traceroute.whois import WhoisClient, WhoisError, WhoisConnectionError
+from gufo.traceroute.whois import WhoisClient, WhoisConnectionError, WhoisError
 
 WHOIS = "whois.radb.net"
 
 
-@pytest.mark.parametrize("addr,exp", [("8.8.8.8", 15169)])
-def test_resolve_as(addr: str, exp: int):
-    async def inner():
+@pytest.mark.parametrize(("addr", "exp"), [("8.8.8.8", 15169)])
+def test_resolve_as(addr: str, exp: int) -> None:
+    async def inner() -> int:
         client = WhoisClient(WHOIS)
         return await client.resolve_as(addr)
 
@@ -27,8 +27,8 @@ def test_resolve_as(addr: str, exp: int):
     assert r == exp
 
 
-def test_failure():
-    async def inner():
+def test_failure() -> None:
+    async def inner() -> int:
         client = WhoisClient(WHOIS)
         return await client.resolve_as("127.0.0.1")
 
@@ -36,8 +36,8 @@ def test_failure():
         asyncio.run(inner())
 
 
-def test_conn_refused():
-    async def inner():
+def test_conn_refused() -> None:
+    async def inner() -> int:
         client = WhoisClient("127.0.0.1")
         return await client.resolve_as("8.8.8.8")
 

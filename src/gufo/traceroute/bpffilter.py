@@ -1,18 +1,20 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: BPF-filter implementation
 # ---------------------------------------------------------------------
-# Copyright (C) 2022, Gufo Labs
+# Copyright (C) 2022-23, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
 
+"""BPF filter implementation."""
+
 # Python modules
-from typing import Iterable, List
 import socket
 import struct
-from ctypes import create_string_buffer, addressof
+from ctypes import addressof, create_string_buffer
+from typing import Iterable, List
 
 # Gufo Labs modules
-from .bpf import Op, compile_bpf, ret, ldb, jeq, ja, jne, ldh, ld
+from .bpf import Op, compile_bpf, ja, jeq, jne, ld, ldb, ldh, ret
 
 S_PROG = struct.Struct("HL")
 SO_ATTACH_FILTER = 26
@@ -29,6 +31,16 @@ def _apply_filter(sock: socket.socket, prog: Iterable[Op]) -> None:
 def apply_ipv4_filter(
     sock: socket.socket, dst_addr: str, src_port: int, dst_port: int
 ) -> None:
+    """
+    Apply BPF filter to the socket (IPv4).
+
+    Args:
+        sock: Socket instance.
+        dst_addr: Destination address (IPv4).
+        src_port: Source port.
+        dst_port: Destiation port.
+    """
+
     def addr_to_int(a: str) -> int:
         parts = [int(x) for x in a.split(".")]
         return (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3]
