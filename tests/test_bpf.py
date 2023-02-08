@@ -57,7 +57,7 @@ def test_backref() -> None:
         (ld(28), Op(0x20, 0, 0, 28)),
     ],
 )
-def test_op(op:Op, exp:Op) -> None:
+def test_op(op: Op, exp: Op) -> None:
     assert op == exp
 
 
@@ -152,6 +152,6 @@ def test_op(op:Op, exp:Op) -> None:
         ),
     ],
 )
-def test_preprocess_bpf(prog:List[Op], exp:List[Op]) -> None:
+def test_preprocess_bpf(prog: List[Op], exp: List[Op]) -> None:
     r = preprocess_bpf(prog)
     assert r == exp
