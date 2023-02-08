@@ -14,12 +14,7 @@ Google docstrings format.
 
 ## Python Code Linting
 
-* All Python code must satisfy [PEP8][PEP8] standards.
-* Code must not contain unused imports.
-* Code must not contain unused variables.
-* Code must not use `l` variable or function names.
-
-All python code must pass [Flake8][Flake8] tests.
+All Python code must pass [Ruff][Ruff] tests with the project's settings.
 
 ## Python Code Static Checks
 
@@ -34,6 +29,6 @@ The test suite must provide 100% code coverage whenever possible.
 * Documentation must be clean and mean.
 
 [Black]: https://black.readthedocs.io/en/stable
-[Flake8]: https://flake8.pycqa.org/en/latest/
+[Ruff]: https://github.com/charliermarsh/ruff
 [Mypy]: https://mypy.readthedocs.io/en/stable/
 [PEP8]: https://peps.python.org/pep-0008/
