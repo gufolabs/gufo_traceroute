@@ -14,7 +14,15 @@ import sys
 import time
 from dataclasses import dataclass
 from types import TracebackType
-from typing import AsyncIterable, Dict, List, Optional, Tuple, Type
+from typing import (
+    AsyncIterable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    no_type_check,
+)
 
 # Gufo Labs modules
 from .whois import WhoisClient, WhoisError
@@ -262,6 +270,7 @@ class Traceroute(object):
             loop = asyncio.get_running_loop()
             await loop.sock_sendto(sock, payload, (addr, self.dst_port))
 
+        @no_type_check
         async def _recvfrom(
             self: "Traceroute", sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
@@ -277,9 +286,7 @@ class Traceroute(object):
                 Tuple of (data, (addr, port))
             """
             loop = asyncio.get_running_loop()
-            return await loop.sock_recvfrom(  # type: ignore[return-value]
-                sock, 4096
-            )
+            return await loop.sock_recvfrom(sock, 4096)
 
     else:
 
