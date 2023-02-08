@@ -260,9 +260,7 @@ class Traceroute(object):
                 addr: destiation address
             """
             loop = asyncio.get_running_loop()
-            await loop.sock_sendto(  # type:ignore[attr-defined]
-                sock, payload, (addr, self.dst_port)
-            )
+            await loop.sock_sendto(sock, payload, (addr, self.dst_port))
 
         async def _recvfrom(
             self: "Traceroute", sock: socket.socket
