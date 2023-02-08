@@ -236,9 +236,7 @@ class Traceroute(object):
             hops: List[Optional[Hop]] = []
             for _ in range(tries):
                 # Send UDP packet
-                await self._sendto(  # typing: ignore[no-untyped-call]
-                    send_socket, payload=b"", addr=addr
-                )
+                await self._sendto(send_socket, payload=b"", addr=addr)
                 # Wait response or timeout
                 try:
                     hop = await asyncio.wait_for(
