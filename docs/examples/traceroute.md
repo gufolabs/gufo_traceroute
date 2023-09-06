@@ -37,7 +37,7 @@ Import the `sys` module to parse the CLI argument.
 --8<-- "examples/traceroute.py"
 ```
 
-The [Traceroute][Traceroute] object holds all necessary API, so let's import it from
+The [Traceroute][gufo.traceroute.Traceroute] object holds all necessary API, so let's import it from
 `gufo.traceroute`.
 
 ``` py title="create.py" linenums="1" hl_lines="7"
@@ -51,22 +51,23 @@ So we define our function as `async`. We expect an address to ping as the
 ``` py title="create.py" linenums="1" hl_lines="8"
 --8<-- "examples/traceroute.py"
 ```
-The [Traceroute][Traceroute] can be used as an instance or as an async
+The [Traceroute][gufo.traceroute.Traceroute] can be used as an instance or as an async
 context manager. So we use `async with` to create the context.
 
 ``` py title="create.py" linenums="1" hl_lines="9"
 --8<-- "examples/traceroute.py"
 ```
-The [traceroute()][traceroute] method starts the session as an asynchronous 
-yielding [HopInfo][HopInfo] objects per each TTL value.
+The [traceroute()][gufo.traceroute.Traceroute.traceroute] method starts the session as an asynchronous 
+yielding [HopInfo][gufo.traceroute.HopInfo] objects per each TTL value.
 `tries` sets the number of probes defined per each host. In our case `info`
 will have exactly 3 items in `info.hops`,
-each either [Hop][Hop] structure, or `None` in case of timeout.
+each either [Hop][gufo.traceroute.Hop] structure, or `None` in case of timeout.
 
 ``` py title="create.py" linenums="1" hl_lines="10"
 --8<-- "examples/traceroute.py"
 ```
-It is up to the application how to handle the [HopInfo][HopInfo]. In our case
+It is up to the application how to handle the 
+[HopInfo][gufo.traceroute.HopInfo]. In our case
 we just print them to get the result like:
 ```
 ...
@@ -91,8 +92,3 @@ Run example as:
 $ sudo examples/traceroute 127.0.0.1
 HopInfo(ttl=1, hops=[Hop(addr='127.0.0.1', rtt=1.5403e-05, asn=0), Hop(addr='127.0.0.1', rtt=1.0747e-05, asn=0), Hop(addr='127.0.0.1', rtt=5.0981e-05, asn=0)])
 ```
-
-[Traceroute]: ../../reference/#gufo.traceroute.Traceroute
-[traceroute]: ../../reference/#gufo.traceroute.traceroute.Traceroute.traceroute
-[HopInfo]: ../../reference/#gufo.traceroute.HopInfo
-[Hop]: ../../reference/#gufo.traceroute.Hop
