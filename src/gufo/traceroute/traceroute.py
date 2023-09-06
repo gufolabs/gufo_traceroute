@@ -327,7 +327,7 @@ class Traceroute(object):
                 sock.sendto(payload, (addr, self.dst_port))
                 return
             except (BlockingIOError, InterruptedError):
-                pass  # noqa: S110
+                pass
             loop = asyncio.get_running_loop()
             fut = loop.create_future()
             fd = sock.fileno()
@@ -372,7 +372,7 @@ class Traceroute(object):
             try:
                 return sock.recvfrom(SIZE)
             except (BlockingIOError, InterruptedError):
-                pass  # noqa: S110
+                pass
             loop = asyncio.get_running_loop()
             fut = loop.create_future()
             fd = sock.fileno()
@@ -396,27 +396,27 @@ class Traceroute(object):
             src_port: Source port.
         """
 
-        def is_matched(msg: bytes) -> bool:
+        def is_matched(msg: bytes) -> bool:  # noqa: PLR0911
             proto = msg[9]
             if proto != PROTO_ICMP:
                 return False
             icmp_type = msg[20]
-            if icmp_type in ACCEPTABLE_ICMP:
-                orig = msg[28:]  # Original header
-                orig_proto = orig[9]
-                if orig_proto != PROTO_UDP:
-                    return False  # Not UDP
-                orig_dst_ip = f"{orig[16]}.{orig[17]}.{orig[18]}.{orig[19]}"
-                if orig_dst_ip != dst_addr:
-                    return False  # Destination address mismatch
-                orig_src_port = (orig[20] << 8) + orig[21]
-                if src_port != orig_src_port:
-                    return False  # Source port mismatch
-                orig_dst_port = (orig[22] << 8) + orig[23]
-                if orig_dst_port != self.dst_port:
-                    return False  # Destination port mismatch
-                return True
-            return False
+            if icmp_type not in ACCEPTABLE_ICMP:
+                return False
+            orig = msg[28:]  # Original header
+            orig_proto = orig[9]
+            if orig_proto != PROTO_UDP:
+                return False  # Not UDP
+            orig_dst_ip = f"{orig[16]}.{orig[17]}.{orig[18]}.{orig[19]}"
+            if orig_dst_ip != dst_addr:
+                return False  # Destination address mismatch
+            orig_src_port = (orig[20] << 8) + orig[21]
+            if src_port != orig_src_port:
+                return False  # Source port mismatch
+            orig_dst_port = (orig[22] << 8) + orig[23]
+            if orig_dst_port != self.dst_port:
+                return False  # Destination port mismatch
+            return True
 
         t0 = time.perf_counter_ns()
         while True:
