@@ -1,3 +1,7 @@
+---
+hide:
+    - navigation
+---
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -11,6 +15,8 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 ### Infrastructure
 
 * Adopt Ruff.
+* devcontainer: Move `settings` to the `customisations.vscode.settings`
+* mkdocs-material 9.2.3
 
 ## 0.2.0 - 2022-12-15
 
