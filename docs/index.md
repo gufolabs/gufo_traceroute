@@ -4,7 +4,7 @@ hide:
     - navigation
     - toc
 hero:
-    title: Gufo Traceroutee
+    title: Gufo Traceroute
     subtitle: The Python asyncio IPv4 traceroute implementation
     install_button: Getting Started
     source_button: Source Code
