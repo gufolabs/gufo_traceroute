@@ -1,7 +1,14 @@
-# Gufo Traceroute Documentation
-
-*Gufo Traceroute is the Python asyncio IPv4 traceroute implementation.*
-
+---
+template: index.html
+hide:
+    - navigation
+    - toc
+hero:
+    title: Gufo Traceroutee
+    subtitle: The Python asyncio IPv4 traceroute implementation
+    install_button: Getting Started
+    source_button: Source Code
+---
 ## Traceroute Problem
 
 Almost every OS is packaged with the famous `traceroute` utility to check the
@@ -27,7 +34,7 @@ async with Traceroute() as tr:
 
 Unlike the others traceroute implementations, Gufo Traceroute works well in noisy environments.
 
-## Virtues
+## Features
 
 * Clean async API.
 * IPv4 support.
