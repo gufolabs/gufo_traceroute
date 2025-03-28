@@ -18,7 +18,11 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 
 ### Changed
 
-* docs: Fancy front page
+* docs: Fancy front page.
+
+### Removed
+
+* Drop Python 3.8 support.
 
 ### Infrastructure
 

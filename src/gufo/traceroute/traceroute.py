@@ -414,7 +414,7 @@ class Traceroute(object):
 
         t0 = time.perf_counter_ns()
         while True:
-            # Python 3.8-3.10 leak CancelledError here
+            # Python 3.9-3.10 leak CancelledError here
             try:
                 data, (addr, _) = await self._recvfrom(sock)
             except asyncio.CancelledError as e:
