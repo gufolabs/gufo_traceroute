@@ -3,6 +3,7 @@
 *Gufo Traceroute is the Python asyncio IPv4 traceroute implementation.*
 
 [![PyPi version](https://img.shields.io/pypi/v/gufo_traceroute.svg)](https://pypi.python.org/pypi/gufo_traceroute/)
+![Python Versions](https://img.shields.io/pypi/dw/gufo_traceroute)
 ![Python Versions](https://img.shields.io/pypi/pyversions/gufo_traceroute)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 ![Build](https://img.shields.io/github/actions/workflow/status/gufolabs/gufo_traceroute/py-tests.yml?branch=master)
@@ -28,11 +29,14 @@ async with Traceroute() as tr:
 Unlike the others traceroute implementation, Gufo Traceroute works well in noisy environments,
 i.e. on hosts generating and receiving large volumes of ICMP traffic.
 
-## Virtues
+## Features
 
+* Pure Python implementation.
+* No external dependencies.
 * Clean async API.
 * IPv4 support.
 * High-performance.
+* Built with security in mind.
 * Built-in whois client for AS number resolution.
 * Full Python typing support.
 * Editor completion.
