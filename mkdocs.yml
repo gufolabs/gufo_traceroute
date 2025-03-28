@@ -2,7 +2,7 @@ site_name: Gufo Traceroute
 site_description: Gufo Traceroute Documentation
 site_author: Gufo Labs
 site_url: "https://docs.gufolabs.com/gufo_traceroute/"
-copyright: "&copy; 2022-23, Gufo Labs"
+copyright: "&copy; 2022-25, Gufo Labs"
 site_dir: dist/docs/
 repo_url: https://github.com/gufolabs/gufo_traceroute/
 repo_name: gufolabs/gufo_traceroute
@@ -14,14 +14,14 @@ nav:
       - Overview: examples/index.md
       - Traceroute: examples/traceroute.md
   - Developers' Guide:
-      - Developer's Environment: environment.md
-      - Building and Testing: testing.md
-      - Common Tasks: devcommon.md
-      - Code Quality: codequality.md
-      - Code Base: codebase.md
+      - Developer's Environment: dev/environment.md
+      - Building and Testing: dev/testing.md
+      - Common Tasks: dev/common.md
+      - Code Quality: dev/codequality.md
+      - Code Base: dev/codebase.md
       - Contributing Guide: CONTRIBUTING.md
       - Code of Conduct: CODE_OF_CONDUCT.md
-      - Supported Standards: standards.md
+      - Supported Standards: dev/standards.md
   - FAQ: faq.md
   - Changelog: CHANGELOG.md
   - License: LICENSE.md
