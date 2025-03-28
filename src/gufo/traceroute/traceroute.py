@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # Gufo Traceroute: Python Traceroute Library
 # ---------------------------------------------------------------------
-# Copyright (C) 2022-23, Gufo Labs
+# Copyright (C) 2022-25, Gufo Labs
 # See LICENSE.md for details
 # ---------------------------------------------------------------------
 
@@ -232,7 +232,6 @@ class Traceroute(object):
         for ttl in range(min_ttl, self.max_hops + 1):
             # Adjust egress packet TTL
             send_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
-            #
             hops: List[Optional[Hop]] = []
             for _ in range(tries):
                 # Send UDP packet
@@ -363,7 +362,7 @@ class Traceroute(object):
                     fut.set_result((data, addr))
 
             def done(
-                _fut: asyncio.Future[Tuple[bytes, Tuple[str, int]]]
+                _fut: asyncio.Future[Tuple[bytes, Tuple[str, int]]],
             ) -> None:
                 if handle is None or not handle.cancelled():
                     loop.remove_reader(fd)
@@ -414,9 +413,7 @@ class Traceroute(object):
             if src_port != orig_src_port:
                 return False  # Source port mismatch
             orig_dst_port = (orig[22] << 8) + orig[23]
-            if orig_dst_port != self.dst_port:
-                return False  # Destination port mismatch
-            return True
+            return self.dst_port == orig_dst_port
 
         t0 = time.perf_counter_ns()
         while True:

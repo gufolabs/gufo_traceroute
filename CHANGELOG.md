@@ -21,6 +21,8 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 * Adopt Ruff.
 * devcontainer: Move `settings` to the `customisations.vscode.settings`
 * mkdocs-material 9.2.3
+* mypy 1.13.0
+* Ruff 0.11.2
 
 ## 0.2.0 - 2022-12-15
 
