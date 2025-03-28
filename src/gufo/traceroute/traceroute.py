@@ -21,7 +21,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    no_type_check,
 )
 
 # Gufo Labs modules
@@ -253,7 +252,6 @@ class Traceroute(object):
 
     if HAS_LOOP_SENDTO:
 
-        @no_type_check
         async def _sendto(
             self: "Traceroute", sock: socket.socket, payload: bytes, addr: str
         ) -> None:
@@ -270,7 +268,6 @@ class Traceroute(object):
             loop = asyncio.get_running_loop()
             await loop.sock_sendto(sock, payload, (addr, self.dst_port))
 
-        @no_type_check
         async def _recvfrom(
             self: "Traceroute", sock: socket.socket
         ) -> Tuple[bytes, Tuple[str, int]]:
@@ -395,7 +392,7 @@ class Traceroute(object):
             src_port: Source port.
         """
 
-        def is_matched(msg: bytes) -> bool:  # noqa: PLR0911
+        def is_matched(msg: bytes) -> bool:
             proto = msg[9]
             if proto != PROTO_ICMP:
                 return False
