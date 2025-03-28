@@ -12,6 +12,10 @@ To see unreleased changes, please see the [CHANGELOG on the master branch](https
 
 ## [Unreleased]
 
+### Added
+
+* Python 3.12 and 3.13 support.
+
 ### Changed
 
 * docs: Fancy front page
