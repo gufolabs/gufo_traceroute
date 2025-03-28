@@ -25,19 +25,19 @@ jobs:
       fail-fast: true
       matrix:
         # Run on all supported versions
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.11", "3.12"]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python {{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       # Cache dependencies
       - name: Cache Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.pip
           key: ${{ runner.os }}-tests-{{ matrix.python-version }}-${{ hashFiles('./.requirements/lint.txt') }}-${{ hashFiles('./.requirements/test.txt') }}
@@ -68,13 +68,16 @@ jobs:
 
   publish:
     runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
     needs: test
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -87,14 +90,8 @@ jobs:
       - name: Build Package
         run: python -m build --sdist --wheel
 
-      # - name: Publish distribution 📦 to Test PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-      #     repository_url: https://test.pypi.org/legacy/
-
       - name: Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          print-hash: true
