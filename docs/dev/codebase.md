@@ -11,14 +11,6 @@ The code base of the project has following structure:
     * `workflows/` - [GitHub Actions Workflows][GitHub Workflows] settings.
       Used to run tests and build the documentation.
 
-* `.requirements/` - Python dependencies for development environment.
-
-    * `docs.txt` - [Mkdocs Material][Mkdocs Material] dependencies.
-    * `ipython.txt` - [IPython] dependencies.
-    * `lint.txt` - [Ruff][Ruff], and [Mypy][Mypy] dependencies.
-    * `requirements.txt` - Module's own dependencies.
-    * `test.txt` - [Pytest][Pytest] dependencies.
-
 * `docs/` - [Mkdocs][Mkdocs] documentation.
 * `examples/` - Project's examples.
 * `src/` - Project's source code.
@@ -32,9 +24,6 @@ The code base of the project has following structure:
 [Remote Containers]: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
 [GitHub Workflows]: https://docs.github.com/en/actions/using-workflows
 [Mkdocs]: https://www.mkdocs.org
-[Mkdocs Material]: https://squidfunk.github.io/mkdocs-material/
-[Ruff]: https://github.com/charliermarsh/ruff
-[Mypy]: https://mypy.readthedocs.io/en/stable/
 [Pytest]: https://docs.pytest.org/
 [Dockerfile]: https://docs.docker.com/engine/reference/builder/
 [Gitignore]: https://git-scm.com/docs/gitignore
