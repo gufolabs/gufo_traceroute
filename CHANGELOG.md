@@ -10,13 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To see unreleased changes, please see the [CHANGELOG on the master branch](https://github.com/gufolabs/gufo_traceroute/blob/master/CHANGELOG.md) guide.
 
-## [Unreleased]
+## 0.2.2 - 2025-08-25
 
 ### Infrastructure
 
 * Move requirements to pyproject.toml
+* IPython 8.4.0
+* mypy 1.13.0
+* ruff==0.11.2
+* pytest==8.3.3
 
-## 0.2.1 -- 2025-03-28
+## 0.2.1 - 2025-03-28
 
 ### Added
 
