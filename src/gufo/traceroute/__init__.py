@@ -14,5 +14,5 @@ Attributes:
 
 from .traceroute import Hop, HopInfo, Traceroute
 
-__version__: str = "0.2.1"
+__version__: str = "0.2.2"
 __all__ = ["Hop", "HopInfo", "Traceroute", "__version__"]
