@@ -24,6 +24,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Typing :: Typed",
 ]
+description = "Gufo Traceroute is the Python asyncio IPv4 traceroute implementation"
 dynamic = ["version"]
 keywords = ["traceroute", "plugin"]
 license = {text = "BSD 3-Clause License"}
