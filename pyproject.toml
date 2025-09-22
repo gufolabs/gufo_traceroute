@@ -17,7 +17,6 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "License :: OSI Approved :: BSD License",
   "Topic :: Software Development",
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -27,7 +26,7 @@ classifiers = [
 description = "Gufo Traceroute is the Python asyncio IPv4 traceroute implementation"
 dynamic = ["version"]
 keywords = ["traceroute", "plugin"]
-license = {text = "BSD 3-Clause License"}
+license = "BSD-3-Clause"
 name = "gufo_traceroute"
 requires-python = ">=3.9"
 
